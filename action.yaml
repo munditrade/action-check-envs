@@ -1,0 +1,30 @@
+# action.yml
+name: 'Check Envs'
+description: 'Check Environment Variables'
+inputs:
+  addr:
+    description: 'ADDR, e.g: https://my.example.com:2345'
+    required: true
+  token:
+    description: 'TOKEN for ADDR'
+    required: true
+  root_engine:
+    description: 'Root Engine Path'
+    required: true
+runs:
+  using: "composite"
+  steps:
+    - id: files
+      uses: munditrade/get-changed-files@master
+    - uses: actions/setup-python@v4
+      with:
+        python-version: '3.9'
+    - run: pip install -r ${{ github.action_path }}/.github/scripts/requirements.txt
+      shell: bash
+    - name: Check Secrets
+      env:
+        ADDR: ${{ inputs.addr }}
+        TOKEN: ${{ inputs.token }}
+        ROOT_ENGINE: ${{ inputs.root_engine }}
+      run: python3 ${{ github.action_path }}/.github/scripts/check.py ${{ steps.files.outputs.all }}
+      shell: bash
