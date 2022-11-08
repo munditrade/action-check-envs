@@ -10,6 +10,9 @@ This Github action perform a validation of environment variables in deployment
 |    token    | TOKEN to use in ADDR                   |   True   |
 | root_engine | Root Engine Path                       |   True   |
 
+## Dependencies
+
+munditrade/get-changed-files
 
 ## Usage
 
