@@ -11,20 +11,34 @@ inputs:
   root_engine:
     description: 'Root Engine Path'
     required: true
+  service_name:
+    description: 'Service Name to validate envs'
+    required: false
 runs:
   using: "composite"
   steps:
-    - id: files
+    - name: get changed files
+      if: ${{ github.event_name != 'workflow_dispatch' }}
+      id: files
       uses: munditrade/get-changed-files@master
     - uses: actions/setup-python@v4
       with:
         python-version: '3.9'
     - run: pip install -r ${{ github.action_path }}/.github/scripts/requirements.txt
       shell: bash
-    - name: Check Secrets
+    - name: Check Secrets Env Workflow
+      if: ${{ github.event_name != 'workflow_dispatch' }}
       env:
         ADDR: ${{ inputs.addr }}
         TOKEN: ${{ inputs.token }}
         ROOT_ENGINE: ${{ inputs.root_engine }}
-      run: python3 ${{ github.action_path }}/.github/scripts/check.py ${{ steps.files.outputs.all }}
+      run: python3 ${{ github.action_path }}/.github/scripts/check.py env ${{ steps.files.outputs.all }}
       shell: bash
+    - name: Check Secrets Promote
+      if: ${{ github.event_name == 'workflow_dispatch' }}
+      env:
+        ADDR: ${{ inputs.addr }}
+        TOKEN: ${{ inputs.token }}
+        ROOT_ENGINE: ${{ inputs.root_engine }}
+      run: python3 ${{ github.action_path }}/.github/scripts/check.py promote ${{ inputs.service_name }} ${{ github.event.inputs.environment }}
+      shell: bash      
